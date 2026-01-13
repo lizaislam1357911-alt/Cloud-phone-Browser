@@ -3,21 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Phone BD Browser</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -81,57 +66,7 @@
             color: #3dfc03;
             text-align: center;
             padding: 8px; font-size: 11px;
-        /* হেডার */
-        header {
-            background-color: #0044cc;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* টুলবার */
-        .toolbar {
-            display: flex;
-            align-items: center;
-            background: #f1f1f1;
-            padding: 8px;
-            gap: 8px;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .toolbar input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #bbb;
-            border-radius: 20px;
-            outline: none;
-        }
-
-        .btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        /* গুগল সার্চ রেজাল্ট দেখানোর ফ্রেম */
-        #browser-viewport {
-            flex: 1;
-            width: 100%;
-            border: none;
-        }
-
-        /* ফুটার */
-        footer {
-            background-color: #1a1a1a;
-            color: #3dfc03;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 12px;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -139,14 +74,14 @@
 
     <header>Browser</header>
 
-    <div class="toolbar">
-        <input type="text" id="urlInput" placeholder="Search Google or type URL...">
-        <button class="btn" onclick="performSearch()">🔍</button>
-        <button class="btn" onclick="alert('Bookmarked!')">⭐</button>
-        <button class="btn">⋮</button>
+    <div class="controls">
+        <input type="text" id="urlInput" placeholder="Search or Website name">
+        <button class="btn" onclick="googleSearch()">🔍</button>
+        <button class="btn btn-add" title="Add Bookmark" onclick="addBookmark()">+</button>
     </div>
 
-    <iframe id="browser-viewport" src="https://www.google.com/search?igu=1"></iframe>
+    <div class="bookmarks-grid" id="bookmarkList">
+        </div>
 
     <footer>
         Owner By (Cloud Phone BD)
@@ -154,26 +89,53 @@
 
     <script>
         const urlInput = document.getElementById('urlInput');
-        const viewport = document.getElementById('browser-viewport');
+        const bookmarkList = document.getElementById('bookmarkList');
 
-        function performSearch() {
-            const query = urlInput.value;
-            if (query) {
-                // যদি সরাসরি URL না হয়, তবে গুগলে সার্চ হবে
-                if (query.includes('.') && !query.includes(' ')) {
-                    viewport.src = query.startsWith('http') ? query : 'https://' + query;
-                } else {
-                    viewport.src = 'https://www.google.com/search?q=' + encodeURIComponent(query) + '&igu=1';
-                }
+        // লোড হওয়ার সময় আগের বুকমার্কগুলো দেখানো
+        window.onload = displayBookmarks;
+
+        // গুগল সার্চ ফাংশন
+        function googleSearch() {
+            let query = urlInput.value;
+            if(query) {
+                window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query);
             }
         }
 
-        // এন্টার চাপলে সার্চ হবে
-        urlInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                performSearch();
+        // বুকমার্ক অ্যাড করার ফাংশন
+        function addBookmark() {
+            let name = urlInput.value;
+            if(!name) {
+                alert("Please enter a name first!");
+                return;
             }
-        });
+
+            let bookmarks = JSON.parse(localStorage.getItem('myBookmarks')) || [];
+            bookmarks.push(name);
+            localStorage.setItem('myBookmarks', JSON.stringify(bookmarks));
+            
+            urlInput.value = ""; // বক্স খালি করা
+            displayBookmarks(); // লিস্ট আপডেট করা
+        }
+
+        // বুকমার্ক প্রদর্শন করার ফাংশন
+        function displayBookmarks() {
+            let bookmarks = JSON.parse(localStorage.getItem('myBookmarks')) || [];
+            bookmarkList.innerHTML = ""; // আগের লিস্ট মোছা
+
+            bookmarks.forEach((name, index) => {
+                let firstLetter = name.charAt(0).toUpperCase();
+                bookmarkList.innerHTML += `
+                    <div class="bookmark-item" onclick="window.location.href='https://www.google.com/search?q=${name}'">
+                        <div class="icon-box">${firstLetter}</div>
+                        <div>${name}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // এন্টার চাপলে সার্চ
+        urlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') googleSearch(); });
     </script>
 
 </body>
